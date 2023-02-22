@@ -43,13 +43,15 @@ void AWeapon::BeginPlay()
 	}
 	if (PickupWidget)
 	{
-		PickupWidget->SetVisibility(false);		
+		PickupWidget->SetVisibility(false);
+
 	}
 	
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{	
+{
+
 	AMainCharacter* MainCharacter = Cast<AMainCharacter>(OtherActor);
 	if (MainCharacter && PickupWidget)
 	{
