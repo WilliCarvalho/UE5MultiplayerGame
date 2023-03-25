@@ -32,6 +32,8 @@ AMainCharacter::AMainCharacter()
 
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	CombatComponent->SetIsReplicated(true); //Components Don't need to be on GetLifetimeReplicatedProps, just need to set it to be replicated
+
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void AMainCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -43,7 +45,7 @@ void AMainCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 void AMainCharacter::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
 }
 
 void AMainCharacter::Tick(float DeltaTime)
@@ -66,6 +68,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("LookUp", this, &AMainCharacter::LookUp);
 
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &AMainCharacter::EquippButtonPressed);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMainCharacter::CrouchButtonPressed);
 }
 
 void AMainCharacter::PostInitializeComponents()
@@ -132,6 +135,18 @@ void AMainCharacter::ServerEquipButtonPressed_Implementation()
 	}
 }
 
+void AMainCharacter::CrouchButtonPressed()
+{
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();
+	}
+}
+
 void AMainCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
 	if (OverlappingWeapon)
@@ -158,5 +173,10 @@ void AMainCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	if (OverlappingWeapon)
 	{
 		OverlappingWeapon->ShowPickupWidget(true);
-	}	
+	}
+}
+
+bool AMainCharacter::IsWeaponEquipped()
+{
+	return (CombatComponent != nullptr && CombatComponent->EquippedWeapon != nullptr);
 }

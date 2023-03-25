@@ -15,8 +15,9 @@ class MPSHOOTERPROJECT_API UCombatComponent : public UActorComponent
 
 public:
 	UCombatComponent();
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	friend class AMainCharacter;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 protected:
@@ -24,6 +25,8 @@ protected:
 	 
 private:
 	class AMainCharacter* Character;
+
+	UPROPERTY(Replicated)
 	AWeapon* EquippedWeapon;
 
 public:
