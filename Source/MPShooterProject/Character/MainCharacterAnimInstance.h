@@ -46,8 +46,12 @@ private:
 		float Lean;
 
 	FRotator CharacterRotationLastFrame;
-	FRotator CharacterRotation;
+	FRotator CharacterRotation;	
+	FRotator DeltaRotation; //Variable for smooth rotation between strafing animations (-180º to 180º) without creating other animation issues
 
-	//Variable for smooth rotation between strafing animations (-180º to 180º) without creating other animation issues
-	FRotator DeltaRotation;
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+		float AO_Yaw;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+		float AO_Pitch;
 };
