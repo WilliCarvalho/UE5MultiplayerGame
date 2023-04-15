@@ -195,6 +195,13 @@ void AMainCharacter::AimOffset(float DeltaTime)
 	}
 
 	AO_Pitch = GetBaseAimRotation().Pitch;
+	if (AO_Pitch >90.f)
+	{
+		//Map pitch from [270, 360) to [-90, 0) -- Because the compress float value sent to the network
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
 }
 
 
@@ -237,4 +244,11 @@ bool AMainCharacter::IsAiming()
 {
 	//the same as IsWeaponEquipped, but writed in a simple way
 	return (CombatComponent && CombatComponent->bAiming);
+}
+
+AWeapon* AMainCharacter::GetEquippedWeapon()
+{
+	if(CombatComponent == nullptr) return nullptr;
+
+	return CombatComponent->EquippedWeapon;
 }
