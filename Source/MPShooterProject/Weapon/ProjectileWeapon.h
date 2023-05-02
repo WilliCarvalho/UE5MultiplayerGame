@@ -13,5 +13,13 @@ UCLASS()
 class MPSHOOTERPROJECT_API AProjectileWeapon : public AWeapon
 {
 	GENERATED_BODY()
+
+public:
+	virtual void Fire(const FVector& HitTarget) override;
+
+private:
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AProjectile> ProjectileClass; //useful to populate the class with a projectile or classes derived from the projectile
 	
 };
