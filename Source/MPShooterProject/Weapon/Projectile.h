@@ -7,7 +7,7 @@
 #include "Projectile.generated.h"
 
 UCLASS()
-class MPSHOOTERPROJECT_API AProjectile: public AActor
+class MPSHOOTERPROJECT_API AProjectile : public AActor
 {
 	GENERATED_BODY()
 
@@ -21,6 +21,9 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 		class UBoxComponent* CollisionBox;
+
+	UPROPERTY(VisibleAnywhere)
+	class UProjectileMovementComponent* ProjectileMovementComponent;
 public:
 
 };
