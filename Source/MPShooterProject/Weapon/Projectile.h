@@ -23,7 +23,12 @@ private:
 		class UBoxComponent* CollisionBox;
 
 	UPROPERTY(VisibleAnywhere)
-	class UProjectileMovementComponent* ProjectileMovementComponent;
+		class UProjectileMovementComponent* ProjectileMovementComponent;
+
+	UPROPERTY(EditAnywhere)
+		class UParticleSystem* Tracer;
+
+	class UParticleSystemComponent* TracerComponent;
 public:
 
 };
