@@ -14,12 +14,21 @@ class MPSHOOTERPROJECT_API ABulletShell : public AActor
 public:
 	ABulletShell();
 
+protected:
+	virtual void BeginPlay() override;
+
+	UFUNCTION() // Important to be UFUNCTION() to be implemented to callbacks, delegates, etc.
+		virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* BulletShellMesh;
 
-protected:
-	virtual void BeginPlay() override;
+	UPROPERTY(EditAnywhere)
+		float ShellEjectionImpulse;
 
+	UPROPERTY(EditAnywhere)
+	class USoundCue* ShellSound;
 
+	bool SoundPlayed = false;
 };
