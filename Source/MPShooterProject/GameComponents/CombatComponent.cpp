@@ -10,6 +10,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "MPShooterProject/PlayerController/MainPlayerController.h"
+#include "MPShooterProject/HUD/MainHUD.h"
 
 
 #define TRACE_LENGHT 80000.f
@@ -43,7 +45,39 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	SetHUDCrosshairs(DeltaTime);
+}
 
+void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
+{
+	if(!Character || !Character->Controller) return;
+
+	Controller = !Controller ? Cast<AMainPlayerController>(Character->Controller) : Controller;
+	if(Controller)
+	{
+		HUD = !HUD ? Cast<AMainHUD>(Controller->GetHUD()) : HUD;
+		if(HUD)
+		{
+			FHUDPackage HUDPackage;
+			if(EquippedWeapon)
+			{				
+				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+				HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+				HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+				HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+				HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;				
+			}
+			else
+			{
+				HUDPackage.CrosshairsCenter = nullptr;
+				HUDPackage.CrosshairsBottom = nullptr;
+				HUDPackage.CrosshairsTop = nullptr;
+				HUDPackage.CrosshairsRight = nullptr;
+				HUDPackage.CrosshairsLeft = nullptr;
+			}
+			HUD->SetHUDPackage(HUDPackage);
+		}
+	}
 }
 
 void UCombatComponent::SetAiming(bool bIsAiming)
