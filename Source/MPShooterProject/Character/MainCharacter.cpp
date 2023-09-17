@@ -1,4 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+/*X = Roll
+	  Y = Pitch
+	  Z = Yaw*/
 
 
 #include "MainCharacter.h"
@@ -66,10 +69,7 @@ void AMainCharacter::Tick(float DeltaTime)
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	/*X = Roll
-	  Y = Pitch
-	  Z = Yaw*/
+{	
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMainCharacter::Jump);
@@ -329,4 +329,10 @@ AWeapon* AMainCharacter::GetEquippedWeapon()
 	if(CombatComponent == nullptr) return nullptr;
 
 	return CombatComponent->EquippedWeapon;
+}
+
+FVector AMainCharacter::GetHitTarget() const
+{
+	if(CombatComponent == nullptr) throw "An error has ocurred";
+	return CombatComponent->HitTarget;
 }

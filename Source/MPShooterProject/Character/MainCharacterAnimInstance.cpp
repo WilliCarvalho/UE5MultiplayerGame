@@ -17,17 +17,17 @@ void UMainCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 {
 	Super::NativeUpdateAnimation(DeltaTime);
 
-	if (MainCharacter == nullptr)
+	if(MainCharacter == nullptr)
 	{
 		MainCharacter = Cast<AMainCharacter>(TryGetPawnOwner());
 	}
-	if (MainCharacter == nullptr) return;
+	if(MainCharacter == nullptr) return;
 
 	//Calculate velocity
 	FVector Velocity = MainCharacter->GetVelocity();
 	Velocity.Z = 0.f;
 	Speed = Velocity.Size();
-	
+
 
 	//Set bool variables to trigger animations
 	bIsInAir = MainCharacter->GetCharacterMovement()->IsFalling();
@@ -58,7 +58,7 @@ void UMainCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	AO_Pitch = MainCharacter->GetAO_Pitch();
 
 	//Set the left hand to be in the correct place of the weapon mesh
-	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && MainCharacter->GetMesh())
+	if(bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && MainCharacter->GetMesh())
 	{
 		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
 		FVector OutPosition;
@@ -66,6 +66,20 @@ void UMainCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		MainCharacter->GetMesh()->TransformToBoneSpace(FName("Hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
 		LeftHandTransform.SetLocation(OutPosition);
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
+
+		if(MainCharacter->IsLocallyControlled())
+		{
+			bLocallyControlled = true;
+			FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("Hand_R"), ERelativeTransformSpace::RTS_World);
+			RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - MainCharacter->GetHitTarget()));
+		}
+
+#pragma region Debug Spheres to check where the weapon is pointing and where the bullet will be shoot
+		/*FTransform MuzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
+		FVector MuzzleX(FRotationMatrix(MuzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
+		DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), MuzzleTipTransform.GetLocation() + MuzzleX * 1000.0f, FColor::Red);
+		DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), MainCharacter->GetHitTarget(), FColor::Orange);*/
+#pragma endregion
 	}
 }
 

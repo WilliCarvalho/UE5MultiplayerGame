@@ -12,6 +12,7 @@
 #include "DrawDebugHelpers.h"
 #include "MPShooterProject/PlayerController/MainPlayerController.h"
 #include "MPShooterProject/HUD/MainHUD.h"
+#include "Camera/CameraComponent.h"
 
 
 #define TRACE_LENGHT 80000.f
@@ -38,6 +39,12 @@ void UCombatComponent::BeginPlay()
 	if(Character)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+
+		if(Character->GetFollowCamera())
+		{
+			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
+			CurrentFOV = DefaultFOV;
+		}
 	}
 }
 
@@ -45,7 +52,15 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	SetHUDCrosshairs(DeltaTime);
+	if(Character && Character->IsLocallyControlled())
+	{
+		FHitResult HitResult;
+		TraceUnderCrosshairs(HitResult);
+		HitTarget = HitResult.ImpactPoint;
+
+		SetHUDCrosshairs(DeltaTime);
+		InterpFOV(DeltaTime);
+	}
 }
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
@@ -60,12 +75,12 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 		{
 			FHUDPackage HUDPackage;
 			if(EquippedWeapon)
-			{				
+			{
 				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
 				HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
 				HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
 				HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
-				HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;				
+				HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
 			}
 			else
 			{
@@ -75,8 +90,47 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				HUDPackage.CrosshairsRight = nullptr;
 				HUDPackage.CrosshairsLeft = nullptr;
 			}
+
+			//Calculate crosshair spread
+			FVector2D WalkSpeedRange(0.f, Character->GetCharacterMovement()->MaxWalkSpeed);
+			FVector2D VelocityMultiplierRange(0.f, 1.f);
+			FVector Velocity = Character->GetVelocity();
+			Velocity.Z = 0.f;
+
+			CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+
+			if(Character->GetCharacterMovement()->IsFalling())
+			{
+				CrosshairinAirFactor = FMath::FInterpTo(CrosshairinAirFactor, 2.25f, DeltaTime, 5.f);
+			}
+			else
+			{
+				CrosshairinAirFactor = FMath::FInterpTo(CrosshairinAirFactor, 0.f, DeltaTime, 30.f);
+			}
+
+			HUDPackage.CrosshairSpread = CrosshairVelocityFactor + CrosshairinAirFactor;
+
 			HUD->SetHUDPackage(HUDPackage);
 		}
+	}
+}
+
+void UCombatComponent::InterpFOV(float DeltaTime)
+{
+	if(!EquippedWeapon) return;
+
+	if(bAiming)
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(),
+									  DeltaTime, EquippedWeapon->GetZoomInferpSpeed());
+	}
+	else
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed);
+	}
+	if(Character && Character->GetFollowCamera())
+	{
+		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
 	}
 }
 
