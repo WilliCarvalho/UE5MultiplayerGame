@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "MPShooterProject/CharacterTypes/TurningInPlace.h"
+#include "MPShooterProject/Interfaces/InteractWithCrosshairInterface.h"
 #include "MainCharacter.generated.h"
 
 UCLASS()
-class MPSHOOTERPROJECT_API AMainCharacter : public ACharacter
+class MPSHOOTERPROJECT_API AMainCharacter : public ACharacter, public IInteractWithCrosshairInterface
 {
 	GENERATED_BODY()
 
@@ -70,6 +71,11 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
+
+	void HideCameraIfCharacterClose();
+
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 200.f;
 
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);

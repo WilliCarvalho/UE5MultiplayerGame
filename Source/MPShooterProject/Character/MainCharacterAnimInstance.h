@@ -50,7 +50,7 @@ private:
 
 	FRotator CharacterRotationLastFrame;
 	FRotator CharacterRotation;	
-	FRotator DeltaRotation; //Variable for smooth rotation between strafing animations (-180บ to 180บ) without creating other animation issues
+	FRotator DeltaRotation; //Variable for smooth rotation between strafing animations (-180ยบ to 180ยบ) without creating other animation issues
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 		float AO_Yaw;

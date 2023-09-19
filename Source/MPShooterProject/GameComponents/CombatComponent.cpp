@@ -11,7 +11,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "MPShooterProject/PlayerController/MainPlayerController.h"
-#include "MPShooterProject/HUD/MainHUD.h"
 #include "Camera/CameraComponent.h"
 
 
@@ -63,7 +62,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	}
 }
 
-void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
+void UCombatComponent::SetHUDCrosshairs(float DeltaTime) 
 {
 	if(!Character || !Character->Controller) return;
 
@@ -73,7 +72,6 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 		HUD = !HUD ? Cast<AMainHUD>(Controller->GetHUD()) : HUD;
 		if(HUD)
 		{
-			FHUDPackage HUDPackage;
 			if(EquippedWeapon)
 			{
 				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
@@ -108,7 +106,24 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				CrosshairinAirFactor = FMath::FInterpTo(CrosshairinAirFactor, 0.f, DeltaTime, 30.f);
 			}
 
-			HUDPackage.CrosshairSpread = CrosshairVelocityFactor + CrosshairinAirFactor;
+			if(bAiming)
+			{
+				//Make the crosshair shrink (can change the hardcoded values to variables and change it in the blueprint as well
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.58f, DeltaTime, 30.f);
+			}
+			else
+			{
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
+			}
+
+			CrosshairShootFactor = FMath::FInterpTo(CrosshairShootFactor, 0.f, DeltaTime, 30.f);
+
+			//Mixing all crosshair spread parameters to make a dynamic spread/shrink
+			HUDPackage.CrosshairSpread = 0.5f +
+				CrosshairVelocityFactor +
+				CrosshairinAirFactor -
+				CrosshairAimFactor + 
+				CrosshairShootFactor;
 
 			HUD->SetHUDPackage(HUDPackage);
 		}
@@ -172,6 +187,11 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 		FHitResult HitResult;
 		TraceUnderCrosshairs(HitResult);
 		ServerFire(HitResult.ImpactPoint);
+
+		if(EquippedWeapon)
+		{
+			CrosshairShootFactor = 1.f;
+		}
 	}
 }
 
@@ -190,7 +210,7 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	}
 }
 
-//Function to create crosshair
+//Function to create a trace hit under the crosshair
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
 	FVector2D ViewportSize;
@@ -214,6 +234,13 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	{
 		FVector Start = CrosshairWorldPosition;
 
+		if(Character)
+		{
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
+			DrawDebugSphere(GetWorld(),Start,16.f,12,FColor::Red,false);
+		}
+
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGHT;
 
 		GetWorld()->LineTraceSingleByChannel(
@@ -222,6 +249,20 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 			End,
 			ECollisionChannel::ECC_Visibility
 		);
+
+		if(TraceHitResult.ImpactPoint.IsZero())
+		{
+			TraceHitResult.ImpactPoint = End;
+		}
+
+		if(TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairInterface>())
+		{
+			HUDPackage.CrosshairColor = FLinearColor::Red;
+		}
+		else
+		{
+			HUDPackage.CrosshairColor = FLinearColor::White;
+		}
 
 		//Commented to remember how to draw a Debug sphere correctly when needed
 		/*DrawDebugSphere(

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "MPShooterProject/HUD/MainHUD.h"
 #include "CombatComponent.generated.h"
 
 //Can forward declare a class here as well
@@ -61,11 +62,14 @@ private:
 
 	bool bFireButtonPressed;
 
-	/**
-	* HUD and crosshairs
-	*/
+#pragma region HUD and Crosshairs
 	float CrosshairVelocityFactor;
 	float CrosshairinAirFactor;
+	float CrosshairAimFactor;
+	float CrosshairShootFactor;
+
+	FHUDPackage HUDPackage;
+#pragma endregion
 
 	FVector HitTarget;
 

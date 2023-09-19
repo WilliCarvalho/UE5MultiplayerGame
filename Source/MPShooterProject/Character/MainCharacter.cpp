@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-/*X = Roll
+
+    /*X = Roll
 	  Y = Pitch
 	  Z = Yaw*/
 
@@ -42,6 +43,7 @@ AMainCharacter::AMainCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 600);
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
@@ -66,6 +68,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	AimOffset(DeltaTime);
+	HideCameraIfCharacterClose();
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -114,7 +117,7 @@ void AMainCharacter::MoveFoward(float Value)
 {
 	if (Controller != nullptr && Value != 0.f)
 	{
-		//Pega a rotação em Z e usa o X (frente) como direção
+		//Pega a rotaï¿½ï¿½o em Z e usa o X (frente) como direï¿½ï¿½o
 		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
 		const FVector Direction(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X));
 		AddMovementInput(Direction, Value);
@@ -125,7 +128,7 @@ void AMainCharacter::MoveRight(float Value)
 {
 	if (Controller != nullptr && Value != 0.f)
 	{
-		//Pega a rotação em Z e usa o X (frente) como direção
+		//Pega a rotaï¿½ï¿½o em Z e usa o X (frente) como direï¿½ï¿½o
 		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
 		const FVector Direction(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y));
 		AddMovementInput(Direction, Value);
@@ -280,6 +283,27 @@ void AMainCharacter::TurnInPlace(float DeltaTime)
 		{
 			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 			StartAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		}
+	}
+}
+
+void AMainCharacter::HideCameraIfCharacterClose()
+{
+	if (!IsLocallyControlled()) return;
+	if((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
+	{
+		GetMesh()->SetVisibility(false);
+		if(CombatComponent && CombatComponent->EquippedWeapon && CombatComponent->EquippedWeapon->GetWeaponMesh())
+		{
+			CombatComponent->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}		
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		if(CombatComponent && CombatComponent->EquippedWeapon && CombatComponent->EquippedWeapon->GetWeaponMesh())
+		{
+			CombatComponent->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
 		}
 	}
 }
