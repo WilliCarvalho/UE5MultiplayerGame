@@ -2,7 +2,6 @@
 
 
 #include "CombatComponent.h"
-#include "Components/SphereComponent.h"
 #include "MPShooterProject/Weapon/Weapon.h"
 #include "MPShooterProject/Character/MainCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -184,8 +183,6 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 
 	if(bFireButtonPressed)
 	{
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);
 		ServerFire(HitResult.ImpactPoint);
 
 		if(EquippedWeapon)
@@ -238,7 +235,6 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		{
 			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();
 			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
-			DrawDebugSphere(GetWorld(),Start,16.f,12,FColor::Red,false);
 		}
 
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGHT;

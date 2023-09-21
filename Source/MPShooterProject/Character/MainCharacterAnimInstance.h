@@ -14,59 +14,64 @@ UCLASS()
 class MPSHOOTERPROJECT_API UMainCharacterAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
+
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 
 private:
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-		class AMainCharacter* MainCharacter;
+	class AMainCharacter* MainCharacter;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		float Speed;
+	float Speed;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		bool bIsInAir;
+	bool bIsInAir;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		bool bIsAccelerating;
-	
+	bool bIsAccelerating;
+
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		bool bWeaponEquipped;
+	bool bWeaponEquipped;
 
 	class AWeapon* EquippedWeapon;
-	
-	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		bool bIsCrouched;
-	
-	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		bool bIsAiming;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		float YawOffset;
+	bool bIsCrouched;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		float Lean;
+	bool bIsAiming;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float YawOffset;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float Lean;
 
 	FRotator CharacterRotationLastFrame;
-	FRotator CharacterRotation;	
-	FRotator DeltaRotation; //Variable for smooth rotation between strafing animations (-180º to 180º) without creating other animation issues
+	FRotator CharacterRotation;
+	FRotator DeltaRotation;
+	//Variable for smooth rotation between strafing animations (-180º to 180º) without creating other animation issues
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		float AO_Yaw;
+	float AO_Yaw;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		float AO_Pitch;
+	float AO_Pitch;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		FTransform LeftHandTransform;
+	FTransform LeftHandTransform;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		ETurningInPlace TurningInPlace;
+	ETurningInPlace TurningInPlace;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		FRotator RightHandRotation;
+	FRotator RightHandRotation;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		bool bLocallyControlled;
+	bool bLocallyControlled;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	bool bRotateRootBone;
 };
