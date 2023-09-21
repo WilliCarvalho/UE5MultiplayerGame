@@ -167,28 +167,47 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 	}
 }
 
-//Replication to make the client movement oriented to the camera rotation if the weapon is equipped
-void UCombatComponent::OnRep_EquippedWeapon()
-{
-	if(EquippedWeapon && Character)
-	{
-		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-		Character->bUseControllerRotationYaw = true;
-	}
-}
-
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonPressed = bPressed;
 
-	if(bFireButtonPressed)
+	if(bFireButtonPressed && EquippedWeapon)
 	{
-		ServerFire(HitResult.ImpactPoint);
+		FireWeapon();
+	}
+}
 
+void UCombatComponent::FireWeapon()
+{
+	if(bCanFire)
+	{
+		bCanFire = false;
+		ServerFire(HitTarget);
 		if(EquippedWeapon)
 		{
 			CrosshairShootFactor = 1.f;
 		}
+		StartFireTimer();
+	}
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	if(EquippedWeapon == nullptr || Character == nullptr) return;
+	Character->GetWorldTimerManager().SetTimer(
+		FireTimer,
+		this,
+		&UCombatComponent::FireTimerFinished,
+		EquippedWeapon->FireDelay);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	if(EquippedWeapon == nullptr) return;
+	bCanFire = true;
+	if(bFireButtonPressed && EquippedWeapon->bAutomatic)
+	{
+		FireWeapon();
 	}
 }
 
@@ -204,6 +223,32 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
+	}
+}
+
+void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
+{
+	if(Character == nullptr || WeaponToEquip == nullptr) return;
+
+	EquippedWeapon = WeaponToEquip;
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+	if(HandSocket)
+	{
+		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+	}
+	EquippedWeapon->SetOwner(Character);
+	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+	Character->bUseControllerRotationYaw = true;
+}
+
+//Replication to make the client movement oriented to the camera rotation if the weapon is equipped
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	if(EquippedWeapon && Character)
+	{
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
 	}
 }
 
@@ -269,20 +314,4 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 			FColor::Red
 		);*/
 	}
-}
-
-void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
-{
-	if(Character == nullptr || WeaponToEquip == nullptr) return;
-
-	EquippedWeapon = WeaponToEquip;
-	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-	if(HandSocket)
-	{
-		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
-	}
-	EquippedWeapon->SetOwner(Character);
-	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	Character->bUseControllerRotationYaw = true;
 }

@@ -8,7 +8,6 @@
 #include "CombatComponent.generated.h"
 
 //Can forward declare a class here as well
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MPSHOOTERPROJECT_API UCombatComponent : public UActorComponent
 {
@@ -30,6 +29,7 @@ protected:
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+	void FireWeapon();
 
 	void FireButtonPressed(bool bPressed);
 
@@ -87,5 +87,14 @@ private:
 		float ZoomInterpSpeed = 20.f;
 
 	void InterpFOV(float DletaTime);
+#pragma endregion
+
+#pragma region Parameters: Automatic fire
+	FTimerHandle FireTimer;
+	
+	bool bCanFire = true;
+
+	void StartFireTimer();
+	void FireTimerFinished();
 #pragma endregion
 };
