@@ -97,6 +97,16 @@ private:
 	float TimeSinceLastMovementReplication;
 	float CalculateSpeed();
 
+#pragma region Player health
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxHealth = 100.f;
+	
+	UPROPERTY(ReplicatedUsing = Onrep_Health, VisibleAnywhere, Category = "Player Stats")
+	float CurrentHealth = 100.f;
+
+	UFUNCTION()
+	void OnRep_Health();
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();

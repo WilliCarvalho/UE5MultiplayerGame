@@ -57,6 +57,7 @@ void AMainCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(AMainCharacter, OverlappingWeapon, COND_OwnerOnly);
+	DOREPLIFETIME(AMainCharacter, CurrentHealth);
 }
 
 void AMainCharacter::OnRep_ReplicatedMovement()
@@ -392,6 +393,11 @@ void AMainCharacter::HideCameraIfCharacterClose()
 	}
 }
 
+
+void AMainCharacter::OnRep_Health()
+{
+	
+}
 
 void AMainCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
