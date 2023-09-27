@@ -13,5 +13,12 @@ UCLASS()
 class MPSHOOTERPROJECT_API AMainPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+public:
+void SetHUDHealth(float CurrentHealth, float MaxHealth);
 	
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	class AMainHUD* MainHUD;
 };

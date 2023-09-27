@@ -107,6 +107,9 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
+	class AMainPlayerController* MainPlayerController;
+#pragma endregion
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();

@@ -15,6 +15,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "MainCharacterAnimInstance.h"
 #include "MPShooterProject/MPShooterProject.h"
+#include "MPShooterProject/PlayerController/MainPlayerController.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -70,6 +71,11 @@ void AMainCharacter::OnRep_ReplicatedMovement()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	MainPlayerController = Cast<AMainPlayerController>(Controller);
+	if (MainPlayerController)
+	{
+		MainPlayerController->SetHUDHealth(CurrentHealth, MaxHealth);
+	}
 }
 
 void AMainCharacter::Tick(float DeltaTime)

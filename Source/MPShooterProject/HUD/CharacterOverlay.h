@@ -13,6 +13,7 @@ UCLASS()
 class MPSHOOTERPROJECT_API UCharacterOverlay : public UUserWidget
 {
 	GENERATED_BODY()
+public:
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* HealthBar;
 
