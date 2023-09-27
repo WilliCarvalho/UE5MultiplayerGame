@@ -71,10 +71,10 @@ void AMainCharacter::OnRep_ReplicatedMovement()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	MainPlayerController = Cast<AMainPlayerController>(Controller);
-	if (MainPlayerController)
+	UpdateHUDHealth();
+	if (HasAuthority())
 	{
-		MainPlayerController->SetHUDHealth(CurrentHealth, MaxHealth);
+		OnTakeAnyDamage.AddDynamic(this, &AMainCharacter::ReceiveDamage);
 	}
 }
 
@@ -151,6 +151,14 @@ void AMainCharacter::PlayHitReactMontage()
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+void AMainCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+                                   AController* InstigatorController, AActor* DamageCauser)
+{
+	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
 }
 
 void AMainCharacter::MoveFoward(float Value)
@@ -246,7 +254,7 @@ float AMainCharacter::CalculateSpeed()
 void AMainCharacter::AimOffset(float DeltaTime)
 {
 	if (CombatComponent && CombatComponent->EquippedWeapon == nullptr) return;
-	
+
 	float Speed = CalculateSpeed();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 
@@ -280,12 +288,12 @@ void AMainCharacter::SimProxiesTurn()
 	if (CombatComponent == nullptr || CombatComponent->EquippedWeapon == nullptr) return;
 	bRotateRootBone = false;
 	float Speed = CalculateSpeed();
-	if(Speed >0.f)
+	if (Speed > 0.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 		return;
 	}
-	
+
 	ProxyRotationLastFrame = ProxyRotation;
 	ProxyRotation = GetActorRotation();
 	ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotationLastFrame).Yaw;
@@ -373,11 +381,6 @@ void AMainCharacter::TurnInPlace(float DeltaTime)
 	}
 }
 
-void AMainCharacter::MultiCastHit_Implementation()
-{
-	PlayHitReactMontage();
-}
-
 void AMainCharacter::HideCameraIfCharacterClose()
 {
 	if (!IsLocallyControlled()) return;
@@ -399,10 +402,19 @@ void AMainCharacter::HideCameraIfCharacterClose()
 	}
 }
 
+void AMainCharacter::UpdateHUDHealth()
+{
+	MainPlayerController = MainPlayerController == nullptr? Cast<AMainPlayerController>(Controller) : MainPlayerController;
+	if (MainPlayerController)
+	{
+		MainPlayerController->SetHUDHealth(CurrentHealth, MaxHealth);
+	}
+}
 
 void AMainCharacter::OnRep_Health()
-{
-	
+{	
+	UpdateHUDHealth();
+	PlayHitReactMontage();
 }
 
 void AMainCharacter::SetOverlappingWeapon(AWeapon* Weapon)

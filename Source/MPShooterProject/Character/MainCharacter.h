@@ -22,10 +22,8 @@ public:
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
 
-	UFUNCTION(NetMulticast, Unreliable)
-	void MultiCastHit();
-
 	virtual void OnRep_ReplicatedMovement() override;
+	void UpdateHUDHealth();
 
 protected:
 	virtual void BeginPlay() override;
@@ -45,6 +43,9 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void PlayHitReactMontage();
+
+	UFUNCTION() //again - needs to be UFUNCTION to receive delegate callbacks
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 
 private:
 	UPROPERTY(visibleAnywhere, Category = Camera)
@@ -100,7 +101,8 @@ private:
 #pragma region Player health
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxHealth = 100.f;
-	
+
+	//Variable replication is better than use RPC - take less data transfer through internet
 	UPROPERTY(ReplicatedUsing = Onrep_Health, VisibleAnywhere, Category = "Player Stats")
 	float CurrentHealth = 100.f;
 
