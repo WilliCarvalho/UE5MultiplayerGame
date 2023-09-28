@@ -15,6 +15,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "MainCharacterAnimInstance.h"
 #include "MPShooterProject/MPShooterProject.h"
+#include "MPShooterProject/GameMode/MainGameMode.h"
 #include "MPShooterProject/PlayerController/MainPlayerController.h"
 
 // Sets default values
@@ -153,12 +154,21 @@ void AMainCharacter::PlayHitReactMontage()
 	}
 }
 
-void AMainCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-                                   AController* InstigatorController, AActor* DamageCauser)
+void AMainCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	PlayHitReactMontage();
+
+	if(CurrentHealth > 0.f) return;
+	
+	AMainGameMode* MainGameMode = GetWorld()->GetAuthGameMode<AMainGameMode>();
+	if (MainGameMode)
+	{
+		MainPlayerController = MainPlayerController == nullptr? Cast<AMainPlayerController>(Controller) : MainPlayerController;
+		AMainPlayerController* AttackerController = Cast<AMainPlayerController>(InstigatorController);
+		MainGameMode->PlayerEliminated(this, MainPlayerController, AttackerController);
+	}
 }
 
 void AMainCharacter::MoveFoward(float Value)
@@ -404,15 +414,21 @@ void AMainCharacter::HideCameraIfCharacterClose()
 
 void AMainCharacter::UpdateHUDHealth()
 {
-	MainPlayerController = MainPlayerController == nullptr? Cast<AMainPlayerController>(Controller) : MainPlayerController;
+	MainPlayerController = MainPlayerController == nullptr
+		                       ? Cast<AMainPlayerController>(Controller)
+		                       : MainPlayerController;
 	if (MainPlayerController)
 	{
 		MainPlayerController->SetHUDHealth(CurrentHealth, MaxHealth);
 	}
 }
 
+void AMainCharacter::OnEliminated()
+{
+}
+
 void AMainCharacter::OnRep_Health()
-{	
+{
 	UpdateHUDHealth();
 	PlayHitReactMontage();
 }

@@ -24,6 +24,7 @@ public:
 
 	virtual void OnRep_ReplicatedMovement() override;
 	void UpdateHUDHealth();
+	void OnEliminated();
 
 protected:
 	virtual void BeginPlay() override;
