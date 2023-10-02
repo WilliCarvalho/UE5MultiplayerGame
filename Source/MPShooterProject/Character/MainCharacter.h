@@ -21,10 +21,13 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
+	void PlayEliminationMontage();
 
 	virtual void OnRep_ReplicatedMovement() override;
 	void UpdateHUDHealth();
 	void OnEliminated();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastOnEliminated();
 
 protected:
 	virtual void BeginPlay() override;
@@ -46,7 +49,8 @@ protected:
 	void PlayHitReactMontage();
 
 	UFUNCTION() //again - needs to be UFUNCTION to receive delegate callbacks
-	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+					   class AController* InstigatorController, AActor* DamageCauser);
 
 private:
 	UPROPERTY(visibleAnywhere, Category = Camera)
@@ -86,6 +90,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* HitReactionMontage;
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* EliminationMontage;
+
 	void HideCameraIfCharacterClose();
 
 	UPROPERTY(EditAnywhere)
@@ -99,7 +106,7 @@ private:
 	float TimeSinceLastMovementReplication;
 	float CalculateSpeed();
 
-#pragma region Player health
+#pragma region Player health and elimination
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxHealth = 100.f;
 
@@ -111,6 +118,14 @@ private:
 	void OnRep_Health();
 
 	class AMainPlayerController* MainPlayerController;
+
+	bool bEliminated = false;
+
+	FTimerHandle ElimTimer;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+	void ElimTimerFinished();
 #pragma endregion
 
 public:
@@ -124,4 +139,5 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
+	FORCEINLINE bool IsEliminated() const { return bEliminated; }
 };

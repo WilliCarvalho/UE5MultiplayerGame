@@ -15,4 +15,5 @@ class MPSHOOTERPROJECT_API AMainGameMode : public AGameMode
 	GENERATED_BODY()
 public:
 	virtual void PlayerEliminated(class AMainCharacter* EliminatedCharacter, class AMainPlayerController* VictimController, AMainPlayerController* AttackerController);
+	virtual void RequestRespawn(ACharacter* EliminatedCharacter, AController* EliminatedController);
 };

@@ -22,7 +22,7 @@
 AMainCharacter::AMainCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->TargetArmLength = 600.f;
@@ -138,6 +138,16 @@ void AMainCharacter::PlayFireMontage(bool bAiming)
 		FName SectionName;
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
 		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void AMainCharacter::PlayEliminationMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && EliminationMontage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Got anim instance, playing montage: %f"), AnimInstance->Montage_Play(EliminationMontage));
+		AnimInstance->Montage_Play(EliminationMontage);
 	}
 }
 
@@ -308,8 +318,6 @@ void AMainCharacter::SimProxiesTurn()
 	ProxyRotation = GetActorRotation();
 	ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotationLastFrame).Yaw;
 
-	UE_LOG(LogTemp, Warning, TEXT("ProxyYaw: %f"), ProxyYaw);
-
 	if (FMath::Abs(ProxyYaw) > TurnThreshold)
 	{
 		if (ProxyYaw > TurnThreshold)
@@ -424,7 +432,29 @@ void AMainCharacter::UpdateHUDHealth()
 }
 
 void AMainCharacter::OnEliminated()
+{	
+	MulticastOnEliminated();
+	GetWorldTimerManager().SetTimer(
+	ElimTimer,
+	this,
+	&AMainCharacter::ElimTimerFinished,
+	ElimDelay
+	);
+}
+
+void AMainCharacter::MulticastOnEliminated_Implementation()
 {
+	bEliminated = true;
+	PlayEliminationMontage();
+}
+
+void AMainCharacter::ElimTimerFinished()
+{
+	AMainGameMode* MainGameMode = GetWorld()->GetAuthGameMode<AMainGameMode>();
+	if (MainGameMode)
+	{
+		MainGameMode->RequestRespawn(this, Controller);
+	}
 }
 
 void AMainCharacter::OnRep_Health()
