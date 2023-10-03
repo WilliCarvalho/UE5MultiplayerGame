@@ -6,13 +6,22 @@
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "MPShooterProject/Character/MainCharacter.h"
+#include "MPShooterProject/PlayerController/MainPlayerController.h"
+#include "MPShooterProject/PlayerState/MainPlayerState.h"
 
 void AMainGameMode::PlayerEliminated(AMainCharacter* EliminatedCharacter, AMainPlayerController* VictimController,
                                      AMainPlayerController* AttackerController)
 {
+	AMainPlayerState* AttackerPlayerState = AttackerController ? Cast<AMainPlayerState>(AttackerController->PlayerState) : nullptr;
+	AMainPlayerState* VictimPlayerState = VictimController ? Cast<AMainPlayerState>(VictimController->PlayerState) : nullptr;
+
+	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
+	{
+		AttackerPlayerState->AddToScore(1.f);
+	}
+	
 	if (EliminatedCharacter)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Playing character elimination"));
 		EliminatedCharacter->OnEliminated();
 	}
 }

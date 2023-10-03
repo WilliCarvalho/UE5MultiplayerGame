@@ -18,6 +18,7 @@
 #include "MPShooterProject/MPShooterProject.h"
 #include "MPShooterProject/GameMode/MainGameMode.h"
 #include "MPShooterProject/PlayerController/MainPlayerController.h"
+#include "MPShooterProject/PlayerState/MainPlayerState.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 
@@ -111,6 +112,7 @@ void AMainCharacter::Tick(float DeltaTime)
 		CalculateAO_Pitch();
 	}
 	HideCameraIfCharacterClose();
+	PoolInit();
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -442,6 +444,18 @@ void AMainCharacter::UpdateHUDHealth()
 	if (MainPlayerController)
 	{
 		MainPlayerController->SetHUDHealth(CurrentHealth, MaxHealth);
+	}
+}
+
+void AMainCharacter::PoolInit()
+{
+	if (MainPlayerState == nullptr)
+	{
+		MainPlayerState = GetPlayerState<AMainPlayerState>();
+		if (MainPlayerState)
+		{
+			MainPlayerState->AddToScore(0.f);
+		}
 	}
 }
 

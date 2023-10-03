@@ -33,6 +33,21 @@ void AMainPlayerController::SetHUDHealth(float CurrentHealth, float MaxHealth)
 	}
 }
 
+void AMainPlayerController::SetHudScore(float Score)
+{
+	MainHUD = MainHUD == nullptr ? Cast<AMainHUD>(GetHUD()) : MainHUD;
+	bool bHUDValid = MainHUD &&
+		MainHUD->CharacterOverlay &&
+		MainHUD->CharacterOverlay &&
+		MainHUD->CharacterOverlay->HealthBar &&
+		MainHUD->CharacterOverlay->HealthText;
+	if (bHUDValid)
+	{
+		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
+		MainHUD->CharacterOverlay->ScoreAmount->SetText(FText::FromString(ScoreText));
+	}
+}
+
 void AMainPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
