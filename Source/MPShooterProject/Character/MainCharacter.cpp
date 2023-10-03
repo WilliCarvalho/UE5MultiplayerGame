@@ -14,9 +14,12 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "MainCharacterAnimInstance.h"
+#include "Kismet/GameplayStatics.h"
 #include "MPShooterProject/MPShooterProject.h"
 #include "MPShooterProject/GameMode/MainGameMode.h"
 #include "MPShooterProject/PlayerController/MainPlayerController.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -52,6 +55,8 @@ AMainCharacter::AMainCharacter()
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
+
+	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimeLineComponent"));
 }
 
 void AMainCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -67,6 +72,15 @@ void AMainCharacter::OnRep_ReplicatedMovement()
 	Super::OnRep_ReplicatedMovement();
 	SimProxiesTurn();
 	TimeSinceLastMovementReplication = 0.f;
+}
+
+void AMainCharacter::Destroyed()
+{
+	Super::Destroyed();
+	if (EliminationBotComponent)
+	{
+		EliminationBotComponent->DestroyComponent();
+	}
 }
 
 void AMainCharacter::BeginPlay()
@@ -432,7 +446,11 @@ void AMainCharacter::UpdateHUDHealth()
 }
 
 void AMainCharacter::OnEliminated()
-{	
+{
+	if (CombatComponent && CombatComponent->EquippedWeapon)
+	{
+		CombatComponent->EquippedWeapon->DropWeapon();
+	}
 	MulticastOnEliminated();
 	GetWorldTimerManager().SetTimer(
 	ElimTimer,
@@ -446,6 +464,47 @@ void AMainCharacter::MulticastOnEliminated_Implementation()
 {
 	bEliminated = true;
 	PlayEliminationMontage();
+
+	//Start dissolve effect
+	if (DissolveMaterialInstance)
+	{
+		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
+		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance);
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
+	}
+	StartDissolve();
+
+	//Disable Character Movement
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (MainPlayerController)
+	{
+		DisableInput(MainPlayerController);
+	}
+	//Disable collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	//Spawn Elimination Bot
+	if (EliminationBotEffect)
+	{
+		FVector EliminationBotSpawnPoint(GetTargetLocation().X, GetActorLocation().Y, GetActorLocation().Z + 200.f);
+		EliminationBotComponent = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			EliminationBotEffect,
+			EliminationBotSpawnPoint,
+			GetActorRotation()
+			);
+	}
+	if (EliminationBotSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(
+			this,
+			EliminationBotSound,
+			GetActorLocation()
+			);
+	}
 }
 
 void AMainCharacter::ElimTimerFinished()
@@ -455,12 +514,34 @@ void AMainCharacter::ElimTimerFinished()
 	{
 		MainGameMode->RequestRespawn(this, Controller);
 	}
+	if (EliminationBotComponent)
+	{
+		EliminationBotComponent->DestroyComponent();
+	}
 }
 
 void AMainCharacter::OnRep_Health()
 {
 	UpdateHUDHealth();
 	PlayHitReactMontage();
+}
+
+void AMainCharacter::UpdateDissolveMaterial(float DissolveValue)
+{
+	if (DynamicDissolveMaterialInstance)
+	{
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+	}
+}
+
+void AMainCharacter::StartDissolve()
+{
+	DissolveTrack.BindDynamic(this, &AMainCharacter::UpdateDissolveMaterial);
+	if (DissolveCurve && DissolveTimeline)
+	{
+		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
+		DissolveTimeline->Play();
+	}
 }
 
 void AMainCharacter::SetOverlappingWeapon(AWeapon* Weapon)

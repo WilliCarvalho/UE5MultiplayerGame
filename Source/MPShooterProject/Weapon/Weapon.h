@@ -26,10 +26,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	void ShowPickupWidget(bool bShowWidget);
-	virtual void Fire(const FVector& HitTarget);
+
 	//passiing by const FVector avoid it to create a copy of the HitResult (useful for optimization)
+	virtual void Fire(const FVector& HitTarget);
 
-
+	void DropWeapon();
 #pragma region  Variables: Textures for the weapon crosshairs
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	class UTexture2D* CrosshairsCenter;

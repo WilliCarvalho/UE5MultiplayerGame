@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "MPShooterProject/CharacterTypes/TurningInPlace.h"
 #include "MPShooterProject/Interfaces/InteractWithCrosshairInterface.h"
@@ -28,6 +29,7 @@ public:
 	void OnEliminated();
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastOnEliminated();
+	virtual void Destroyed() override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -50,7 +52,7 @@ protected:
 
 	UFUNCTION() //again - needs to be UFUNCTION to receive delegate callbacks
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-					   class AController* InstigatorController, AActor* DamageCauser);
+	                   class AController* InstigatorController, AActor* DamageCauser);
 
 private:
 	UPROPERTY(visibleAnywhere, Category = Camera)
@@ -126,6 +128,38 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float ElimDelay = 3.f;
 	void ElimTimerFinished();
+#pragma endregion
+
+#pragma region Dissolve Effect
+	UPROPERTY(VisibleAnywhere)
+	UTimelineComponent* DissolveTimeline;
+	FOnTimelineFloat DissolveTrack;
+
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* DissolveCurve;
+
+	UFUNCTION()
+	void UpdateDissolveMaterial(float DissolveValue);
+	void StartDissolve();
+
+	//Dynamic instance that we can change at runtime
+	UPROPERTY(VisibleAnywhere, Category = Elimination)
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
+
+	// Material instance set on the Blueprint, used with the dynamic material instance
+	UPROPERTY(EditAnywhere, Category = Elimination)
+	UMaterialInstance* DissolveMaterialInstance;
+#pragma endregion
+
+#pragma region Elimination bot
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* EliminationBotEffect;
+
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent* EliminationBotComponent;
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue* EliminationBotSound;
 #pragma endregion
 
 public:
