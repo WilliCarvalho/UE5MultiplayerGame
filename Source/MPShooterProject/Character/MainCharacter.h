@@ -50,11 +50,12 @@ protected:
 	void PlayHitReactMontage();
 
 	UFUNCTION() //again - needs to be UFUNCTION to receive delegate callbacks
-	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,class AController* InstigatorController, AActor* DamageCauser);
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	                   class AController* InstigatorController, AActor* DamageCauser);
 	void UpdateHUDHealth();
 	// Pool for any relevant classes and initialize our HUD
 	void PoolInit();
-	
+
 private:
 	UPROPERTY(visibleAnywhere, Category = Camera)
 	class USpringArmComponent* CameraBoom;
@@ -163,7 +164,9 @@ private:
 	class USoundCue* EliminationBotSound;
 #pragma endregion
 
+	UPROPERTY()
 	class AMainPlayerState* MainPlayerState;
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();

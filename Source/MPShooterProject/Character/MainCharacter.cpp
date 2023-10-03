@@ -454,7 +454,9 @@ void AMainCharacter::PoolInit()
 		MainPlayerState = GetPlayerState<AMainPlayerState>();
 		if (MainPlayerState)
 		{
+			//Update the HUD to ensure it will show the correct Game start values (0)
 			MainPlayerState->AddToScore(0.f);
+			MainPlayerState->AddToDefeats(0);
 		}
 	}
 }

@@ -16,7 +16,8 @@ class MPSHOOTERPROJECT_API AMainPlayerController : public APlayerController
 
 public:
 	void SetHUDHealth(float CurrentHealth, float MaxHealth);
-	void SetHudScore(float Score);
+	void SetHUDScore(float Score);
+	void SetHUDDefeats(int32 Defeats);
 	virtual void OnPossess(APawn* InPawn) override;
 
 protected:

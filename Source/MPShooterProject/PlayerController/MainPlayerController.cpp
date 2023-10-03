@@ -16,6 +16,17 @@ void AMainPlayerController::BeginPlay()
 	MainHUD = Cast<AMainHUD>(GetHUD());
 }
 
+void AMainPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	AMainCharacter* MainCharacter = Cast<AMainCharacter>(InPawn);
+	if (MainCharacter)
+	{
+		SetHUDHealth(MainCharacter->GetCurrentHealth(), MainCharacter->GetMaxHealth());
+	}
+}
+
 void AMainPlayerController::SetHUDHealth(float CurrentHealth, float MaxHealth)
 {
 	MainHUD = MainHUD == nullptr ? Cast<AMainHUD>(GetHUD()) : MainHUD;
@@ -28,12 +39,13 @@ void AMainPlayerController::SetHUDHealth(float CurrentHealth, float MaxHealth)
 	{
 		const float HealthPercent = CurrentHealth / MaxHealth;
 		MainHUD->CharacterOverlay->HealthBar->SetPercent(HealthPercent);
-		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(CurrentHealth), FMath::CeilToInt(MaxHealth));
+		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(CurrentHealth),
+		                                     FMath::CeilToInt(MaxHealth));
 		MainHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
 }
 
-void AMainPlayerController::SetHudScore(float Score)
+void AMainPlayerController::SetHUDScore(float Score)
 {
 	MainHUD = MainHUD == nullptr ? Cast<AMainHUD>(GetHUD()) : MainHUD;
 	bool bHUDValid = MainHUD &&
@@ -48,13 +60,15 @@ void AMainPlayerController::SetHudScore(float Score)
 	}
 }
 
-void AMainPlayerController::OnPossess(APawn* InPawn)
+void AMainPlayerController::SetHUDDefeats(int32 Defeats)
 {
-	Super::OnPossess(InPawn);
-
-	AMainCharacter* MainCharacter = Cast<AMainCharacter>(InPawn);
-	if (MainCharacter)
+	MainHUD = MainHUD == nullptr ? Cast<AMainHUD>(GetHUD()) : MainHUD;
+	bool bHUDValid = MainHUD &&
+		MainHUD->CharacterOverlay &&
+		MainHUD->CharacterOverlay->DefeatsAmount;
+	if (bHUDValid)
 	{
-		SetHUDHealth(MainCharacter->GetCurrentHealth(), MainCharacter->GetMaxHealth());
+		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
+		MainHUD->CharacterOverlay->DefeatsAmount->SetText(FText::FromString(DefeatsText));
 	}
 }
