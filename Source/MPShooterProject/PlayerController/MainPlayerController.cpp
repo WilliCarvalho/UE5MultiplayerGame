@@ -12,7 +12,7 @@
 void AMainPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	MainHUD = Cast<AMainHUD>(GetHUD());
 }
 
@@ -70,5 +70,18 @@ void AMainPlayerController::SetHUDDefeats(int32 Defeats)
 	{
 		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
 		MainHUD->CharacterOverlay->DefeatsAmount->SetText(FText::FromString(DefeatsText));
+	}
+}
+
+void AMainPlayerController::SetHUDWeaponAmmo(int32 Amount)
+{
+	MainHUD = MainHUD == nullptr ? Cast<AMainHUD>(GetHUD()) : MainHUD;
+	bool bHUDValid = MainHUD &&
+		MainHUD->CharacterOverlay &&
+		MainHUD->CharacterOverlay->WeaponAmmoAmount;
+	if (bHUDValid)
+	{
+		FString WeaponAmmoAmountText = FString::Printf(TEXT("%d"), Amount);
+		MainHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(WeaponAmmoAmountText));
 	}
 }

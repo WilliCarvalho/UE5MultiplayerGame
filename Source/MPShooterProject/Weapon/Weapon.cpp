@@ -10,6 +10,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "BulletShell.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "MPShooterProject/PlayerController/MainPlayerController.h"
 
 
 AWeapon::AWeapon()
@@ -61,7 +62,9 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, WeaponState);
+	DOREPLIFETIME(AWeapon, AmmoAmount);
 }
+
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                               UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
@@ -99,7 +102,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 	case EWeaponState::EWS_Dropped:
 		if (HasAuthority())
 		{
-			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);			
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		}
 		WeaponMesh->SetSimulatePhysics(true);
 		WeaponMesh->SetEnableGravity(true);
@@ -123,6 +126,47 @@ void AWeapon::OnRep_WeaponState()
 		WeaponMesh->SetEnableGravity(true);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
+	}
+}
+
+
+void AWeapon::SpendRound()
+{
+	--AmmoAmount;
+	SetHUDWeaponAmmoAmount();
+}
+
+void AWeapon::OnRep_Ammo()
+{
+	SetHUDWeaponAmmoAmount();
+}
+
+void AWeapon::OnRep_Owner()
+{
+	Super::OnRep_Owner();
+	if (Owner == nullptr)
+	{
+		MainOwnerCharacter = nullptr;
+		MainOwnerController = nullptr;
+	}
+	else
+	{
+		SetHUDWeaponAmmoAmount();
+	}
+}
+
+void AWeapon::SetHUDWeaponAmmoAmount()
+{
+	MainOwnerCharacter = MainOwnerCharacter == nullptr ? Cast<AMainCharacter>(GetOwner()) : MainOwnerCharacter;
+	if (MainOwnerCharacter)
+	{
+		MainOwnerController = MainOwnerController == nullptr
+			                      ? Cast<AMainPlayerController>(MainOwnerCharacter->Controller)
+			                      : MainOwnerController;
+		if (MainOwnerController)
+		{
+			MainOwnerController->SetHUDWeaponAmmo(AmmoAmount);
+		}
 	}
 }
 
@@ -157,10 +201,15 @@ void AWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
+	SpendRound();
 }
 
 void AWeapon::DropWeapon()
 {
 	SetWeaponState(EWeaponState::EWS_Dropped);
-	 
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	WeaponMesh->DetachFromComponent(DetachRules);
+	SetOwner(nullptr);
+	MainOwnerCharacter = nullptr;
+	MainOwnerController = nullptr;
 }

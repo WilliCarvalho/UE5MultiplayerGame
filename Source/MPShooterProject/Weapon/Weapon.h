@@ -25,12 +25,14 @@ public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnRep_Owner() override;
 	void ShowPickupWidget(bool bShowWidget);
 
-	//passiing by const FVector avoid it to create a copy of the HitResult (useful for optimization)
+	//passing by const FVector avoid it to create a copy of the HitResult (useful for optimization)
 	virtual void Fire(const FVector& HitTarget);
 
 	void DropWeapon();
+
 #pragma region  Variables: Textures for the weapon crosshairs
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	class UTexture2D* CrosshairsCenter;
@@ -59,7 +61,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	//The function needs these parameters because the delegate has these parameters, and withou it, we can't bind it to the Overlap Delegate
+	//The function needs these parameters because the delegate has these parameters, and without it, we can't bind it to the Overlap Delegate
 	UFUNCTION()
 	virtual void OnSphereOverlap(
 		UPrimitiveComponent* OverlappedComponent,
@@ -99,6 +101,24 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ABulletShell> BulletShellClass;
 
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	int32 AmmoAmount;
+
+	UFUNCTION()
+	void OnRep_Ammo();
+	
+	void SpendRound();
+
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
+
+	UPROPERTY()
+	class AMainCharacter* MainOwnerCharacter;
+	UPROPERTY()
+	class AMainPlayerController* MainOwnerController;
+
+	
+	
 #pragma region Parameters: Zoomed FOV while aiming
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
@@ -109,6 +129,7 @@ private:
 
 public:
 	void SetWeaponState(EWeaponState State);
+	void SetHUDWeaponAmmoAmount();
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
