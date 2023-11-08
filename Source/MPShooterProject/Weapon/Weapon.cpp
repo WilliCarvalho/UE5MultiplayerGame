@@ -170,6 +170,8 @@ void AWeapon::SetHUDWeaponAmmoAmount()
 	}
 }
 
+
+
 bool AWeapon::IsEmpty()
 {
 	return AmmoAmount <= 0;

@@ -481,6 +481,7 @@ void AMainCharacter::MulticastOnEliminated_Implementation()
 	if (MainPlayerController)
 	{
 		MainPlayerController->SetHUDWeaponAmmo(0);
+		MainPlayerController->SetHUDCarriedAmmo(0);
 	}
 	bEliminated = true;
 	PlayEliminationMontage();

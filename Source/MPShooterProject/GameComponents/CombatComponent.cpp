@@ -29,6 +29,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bAiming);
+	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly); //Adding a condition to Replicate the variable just to owning client can minimize the data sent through the internet and provide a performance boost
 }
 
 void UCombatComponent::BeginPlay()
@@ -43,6 +44,11 @@ void UCombatComponent::BeginPlay()
 			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 			CurrentFOV = DefaultFOV;
 		}
+	}
+
+	if (Character->HasAuthority())
+	{
+		InitializeCarriedAmmo();
 	}
 }
 
@@ -179,7 +185,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 
 void UCombatComponent::FireWeapon()
 {
-	if(canFire())
+	if(CanFire())
 	{
 		bCanFire = false;
 		ServerFire(HitTarget);
@@ -243,6 +249,15 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetHUDWeaponAmmoAmount();
+
+	const EWeaponType MyEquippedWeaponType = EquippedWeapon->GetWeaponType();
+	if (CarriedAmmoMap.Contains(MyEquippedWeaponType))
+	{
+		CarriedAmmo = CarriedAmmoMap[MyEquippedWeaponType];
+	}
+	
+	SetHUDCarriedAmmo();
+	
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
@@ -328,9 +343,29 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	}
 }
 
-bool UCombatComponent::canFire()
+bool UCombatComponent::CanFire()
 {
 	if (EquippedWeapon == nullptr) return false;		
 
 	return !EquippedWeapon->IsEmpty() || !bCanFire;
+}
+
+void UCombatComponent::OnRep_CarriedAmmo()
+{
+	SetHUDCarriedAmmo();
+}
+
+void UCombatComponent::SetHUDCarriedAmmo()
+{
+	Controller = Controller == nullptr? Cast<AMainPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+}
+
+void UCombatComponent::InitializeCarriedAmmo()
+{
+	//Use emplace is better then .Add() because avoid creating temp variable values
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, 30);
 }

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "MPShooterProject/HUD/MainHUD.h"
+#include "MPShooterProject/Weapon/WeaponTypes.h"
 #include "CombatComponent.generated.h"
 
 //Can forward declare a class here as well
@@ -92,7 +93,7 @@ private:
 	void InterpFOV(float DletaTime);
 #pragma endregion
 
-#pragma region Parameters: Automatic fire
+#pragma region Parameters: Automatic fire parameters
 	FTimerHandle FireTimer;
 	
 	bool bCanFire = true;
@@ -101,5 +102,20 @@ private:
 	void FireTimerFinished();
 #pragma endregion
 
-	bool canFire();
+	bool CanFire();
+
+	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
+	int32 CarriedAmmo;
+
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+
+	TMap<EWeaponType, int32> CarriedAmmoMap;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingAmmo = 30;
+
+	void SetHUDCarriedAmmo();
+	
+	void InitializeCarriedAmmo();
 };

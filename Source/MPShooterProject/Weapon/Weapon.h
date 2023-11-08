@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
 #include "Weapon.generated.h"
 
 UENUM(BlueprintType)
@@ -106,7 +107,7 @@ private:
 
 	UFUNCTION()
 	void OnRep_Ammo();
-	
+
 	void SpendRound();
 
 	UPROPERTY(EditAnywhere)
@@ -117,8 +118,10 @@ private:
 	UPROPERTY()
 	class AMainPlayerController* MainOwnerController;
 
-	
-	
+	UPROPERTY(EditAnywhere)
+	EWeaponType WeaponType;
+
+
 #pragma region Parameters: Zoomed FOV while aiming
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
@@ -135,4 +138,5 @@ public:
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInferpSpeed() const { return ZoomInterpSpeed; }
 	bool IsEmpty();
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 };
