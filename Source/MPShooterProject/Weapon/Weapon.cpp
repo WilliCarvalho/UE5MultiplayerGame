@@ -132,7 +132,7 @@ void AWeapon::OnRep_WeaponState()
 
 void AWeapon::SpendRound()
 {
-	--AmmoAmount;
+	AmmoAmount = FMath::Clamp(AmmoAmount- 1, 0, MagCapacity);
 	SetHUDWeaponAmmoAmount();
 }
 
@@ -168,6 +168,11 @@ void AWeapon::SetHUDWeaponAmmoAmount()
 			MainOwnerController->SetHUDWeaponAmmo(AmmoAmount);
 		}
 	}
+}
+
+bool AWeapon::IsEmpty()
+{
+	return AmmoAmount <= 0;
 }
 
 void AWeapon::ShowPickupWidget(bool bShowWidget)

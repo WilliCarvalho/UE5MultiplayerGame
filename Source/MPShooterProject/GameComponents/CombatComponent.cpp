@@ -179,7 +179,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 
 void UCombatComponent::FireWeapon()
 {
-	if(bCanFire)
+	if(canFire())
 	{
 		bCanFire = false;
 		ServerFire(HitTarget);
@@ -264,7 +264,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
-//Function to create a trace hit under the crosshair
+//Function to make the bullet hit under the crosshair
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
 	FVector2D ViewportSize;
@@ -326,4 +326,11 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 			FColor::Red
 		);*/
 	}
+}
+
+bool UCombatComponent::canFire()
+{
+	if (EquippedWeapon == nullptr) return false;		
+
+	return !EquippedWeapon->IsEmpty() || !bCanFire;
 }

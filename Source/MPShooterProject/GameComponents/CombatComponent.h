@@ -100,4 +100,6 @@ private:
 	void StartFireTimer();
 	void FireTimerFinished();
 #pragma endregion
+
+	bool canFire();
 };
