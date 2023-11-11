@@ -262,6 +262,11 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	Character->bUseControllerRotationYaw = true;
 }
 
+void UCombatComponent::Reload()
+{
+	
+}
+
 //Replication to make the client movement oriented to the camera rotation if the weapon is equipped
 void UCombatComponent::OnRep_EquippedWeapon()
 {

@@ -132,6 +132,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AMainCharacter::AimButtonReleased);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMainCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AMainCharacter::FireButtonReleased);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacter::ReloadButtonPressed);
 }
 
 void AMainCharacter::PostInitializeComponents()
@@ -261,6 +262,14 @@ void AMainCharacter::CrouchButtonPressed()
 	else
 	{
 		Crouch();
+	}
+}
+
+void AMainCharacter::ReloadButtonPressed()
+{
+	if (CombatComponent)
+	{
+		CombatComponent->Reload();
 	}
 }
 
