@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "MPShooterProject/CharacterTypes/CombatState.h"
 #include "MPShooterProject/HUD/MainHUD.h"
 #include "MPShooterProject/Weapon/WeaponTypes.h"
 #include "CombatComponent.generated.h"
@@ -19,15 +20,13 @@ public:
 	friend class AMainCharacter;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 	void Reload();
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
 protected:
 	virtual void BeginPlay() override;
-	void SetAiming(bool bIsAiming);
-
-	UFUNCTION(Server, Reliable)
-	void ServerSetAiming(bool bIsAiming);
+	void SetAiming(bool bIsAiming);	
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
@@ -36,10 +35,18 @@ protected:
 	void FireButtonPressed(bool bPressed);
 
 	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(bool bIsAiming);
+
+	UFUNCTION(Server, Reliable)
 	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
+
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
+
+	void HandleReload();
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
@@ -119,4 +126,10 @@ private:
 	void SetHUDCarriedAmmo();
 	
 	void InitializeCarriedAmmo();
+
+	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
+	ECombatState CombatState = ECombatState::ECS_Unoccupied;
+
+	UFUNCTION()
+	void OnRep_CombatState();
 };

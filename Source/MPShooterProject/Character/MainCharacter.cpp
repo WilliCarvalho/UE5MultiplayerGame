@@ -43,7 +43,8 @@ AMainCharacter::AMainCharacter()
 	OverheadWidget->SetupAttachment(RootComponent);
 
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
-	CombatComponent->SetIsReplicated(true);
+	CombatComponent->SetIsReplicatedByDefault(true); // Set all CombatComponents to replicate - SHOULD ONLY BE CALLED IN COMPONENT CONSTRUCTOR
+	//CombatComponent->SetIsReplicated(true); // Commented because it just tell for this CombatComp to replicate, but we need all CC to replicate
 	//Components Don't need to be on GetLifetimeReplicatedProps, just need to set it to be replicated
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
@@ -154,6 +155,26 @@ void AMainCharacter::PlayFireMontage(bool bAiming)
 		AnimInstance->Montage_Play(FireWeaponMontage);
 		FName SectionName;
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void AMainCharacter::PlayReloadMontage()
+{
+	if (CombatComponent == nullptr || CombatComponent->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ReloadMontage)
+	{
+		AnimInstance->Montage_Play(ReloadMontage);
+		FName SectionName;
+
+		switch (CombatComponent->EquippedWeapon->GetWeaponType())
+		{
+		case EWeaponType::EWT_AssaultRifle:
+			SectionName = FName("Rifle");
+			break;
+		}
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
@@ -625,4 +646,11 @@ FVector AMainCharacter::GetHitTarget() const
 {
 	if (CombatComponent == nullptr) throw "An error has ocurred";
 	return CombatComponent->HitTarget;
+}
+
+ECombatState AMainCharacter::GetCombatState() const
+{
+	if(CombatComponent == nullptr) return ECombatState::ECS_MAX;
+
+	return CombatComponent->CombatState;
 }

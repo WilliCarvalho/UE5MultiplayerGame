@@ -77,6 +77,7 @@ void UMainCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 			RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 30.f);
 		}
 
+		bUseFABRIK = MainCharacter->GetCombatState() != ECombatState::ECS_Reloading;
 #pragma region Debug Spheres to check where the weapon is pointing and where the bullet will be shoot
 		/*FTransform MuzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
 		FVector MuzzleX(FRotationMatrix(MuzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
