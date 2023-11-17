@@ -172,7 +172,7 @@ void AWeapon::SetHUDWeaponAmmoAmount()
 
 
 
-bool AWeapon::IsEmpty()
+bool AWeapon::IsMagEmpty()
 {
 	return AmmoAmount <= 0;
 }
@@ -219,4 +219,10 @@ void AWeapon::DropWeapon()
 	SetOwner(nullptr);
 	MainOwnerCharacter = nullptr;
 	MainOwnerController = nullptr;
+}
+
+void AWeapon::AddAmmoToMag(int32 AmmoToAdd)
+{
+	AmmoAmount = FMath::Clamp(AmmoAmount - AmmoToAdd, 0, MagCapacity);
+	SetHUDWeaponAmmoAmount();
 }

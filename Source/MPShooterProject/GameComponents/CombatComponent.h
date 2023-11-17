@@ -43,14 +43,16 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
 
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
+	void SetHUDCrosshairs(float DeltaTime);
+
 	UFUNCTION(Server, Reliable)
 	void ServerReload();
 
 	void HandleReload();
 
-	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
-
-	void SetHUDCrosshairs(float DeltaTime);
+	int32 AmountToReload();
 	 
 private:
 	UPROPERTY()
@@ -132,4 +134,6 @@ private:
 
 	UFUNCTION()
 	void OnRep_CombatState();
+
+	void UpdateAmmoValues();
 };

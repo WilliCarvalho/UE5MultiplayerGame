@@ -33,6 +33,7 @@ public:
 	virtual void Fire(const FVector& HitTarget);
 
 	void DropWeapon();
+	void AddAmmoToMag(int32 AmmoToAdd);
 
 #pragma region  Variables: Textures for the weapon crosshairs
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
@@ -133,10 +134,12 @@ private:
 public:
 	void SetWeaponState(EWeaponState State);
 	void SetHUDWeaponAmmoAmount();
+	bool IsMagEmpty();
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInferpSpeed() const { return ZoomInterpSpeed; }
-	bool IsEmpty();
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE int32 GetMagCapacity() const {return MagCapacity;}
+	FORCEINLINE int32 GetAmmo() const {return AmmoAmount;}
 };
