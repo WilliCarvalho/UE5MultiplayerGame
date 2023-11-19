@@ -136,4 +136,5 @@ private:
 	void OnRep_CombatState();
 
 	void UpdateAmmoValues();
+	void PlayEquipWeaponSound();
 };

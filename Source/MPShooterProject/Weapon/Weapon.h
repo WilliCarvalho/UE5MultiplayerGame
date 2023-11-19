@@ -60,6 +60,8 @@ public:
 	bool bAutomatic = true;
 #pragma endregion
 
+	UPROPERTY(EditAnywhere)
+	class USoundCue* EquipSound;
 protected:
 	virtual void BeginPlay() override;
 

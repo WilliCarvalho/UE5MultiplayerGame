@@ -11,6 +11,7 @@
 #include "DrawDebugHelpers.h"
 #include "MPShooterProject/PlayerController/MainPlayerController.h"
 #include "Camera/CameraComponent.h"
+#include "Sound/SoundCue.h"
 
 
 #define TRACE_LENGHT 80000.f
@@ -262,6 +263,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 	SetHUDCarriedAmmo();
 
+	PlayEquipWeaponSound();
+	
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
@@ -333,6 +336,18 @@ void UCombatComponent::UpdateAmmoValues()
 	EquippedWeapon->AddAmmoToMag(-ReloadAmount);
 }
 
+void UCombatComponent::PlayEquipWeaponSound()
+{
+	if (EquippedWeapon->EquipSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			EquippedWeapon->EquipSound,
+			Character->GetActorLocation()
+		);
+	}
+}
+
 void UCombatComponent::HandleReload()
 {
 	Character->PlayReloadMontage();
@@ -367,6 +382,8 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		EquippedWeapon->SetOwner(Character);
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
+
+		PlayEquipWeaponSound();
 	}
 }
 
