@@ -220,6 +220,11 @@ void UCombatComponent::FireTimerFinished()
 	{
 		FireWeapon();
 	}
+
+	if (EquippedWeapon->IsMagEmpty())
+	{
+		Reload();
+	}
 }
 
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
@@ -267,6 +272,11 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
+
+	if (EquippedWeapon->IsMagEmpty())
+	{
+		Reload();
+	}
 }
 
 void UCombatComponent::Reload()
