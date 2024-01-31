@@ -16,10 +16,22 @@ void AMainPlayerController::BeginPlay()
 	MainHUD = Cast<AMainHUD>(GetHUD());
 }
 
-void AMainPlayerController::Tick(float DeltaSeconds)
+void AMainPlayerController::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaSeconds);
+	Super::Tick(DeltaTime);
+
 	SetHUDTime();
+	CheckTimeSync(DeltaTime);
+}
+
+void AMainPlayerController::CheckTimeSync(float DeltaTime)
+{
+	TimeSyncRunningTime += DeltaTime;
+	if (IsLocalController() && TimeSyncRunningTime > TimeSyncFrequency)
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+		TimeSyncRunningTime = 0.f;
+	}
 }
 
 void AMainPlayerController::OnPossess(APawn* InPawn)
@@ -123,11 +135,40 @@ void AMainPlayerController::SetHUDMatchCountdown(float CountdownTime)
 
 void AMainPlayerController::SetHUDTime()
 {
-	uint32 SecondsLeft = FMath::CeilToInt(MatchTime - GetWorld()->GetTimeSeconds());
+	uint32 SecondsLeft = FMath::CeilToInt(MatchTime - GetServerTime());
 	if (CountdownInt != SecondsLeft)
 	{
-		SetHUDMatchCountdown(MatchTime - GetWorld()->GetTimeSeconds());
+		SetHUDMatchCountdown(MatchTime - GetServerTime());
 	}
 
 	CountdownInt = SecondsLeft;
+}
+
+void AMainPlayerController::ServerRequestServerTime_Implementation(float TimeOfClientRequest)
+{
+	float ServerTimeOfReceipt = GetWorld()->GetTimeSeconds();
+	ClientReportServerTime(TimeOfClientRequest, ServerTimeOfReceipt);
+}
+
+void AMainPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest, float TimeServerReceivedClientRequest)
+{
+	float RoundTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest;
+	float CurrentServerTime = TimeServerReceivedClientRequest + (0.5f * RoundTripTime);
+	ClientServerDelta = CurrentServerTime - GetWorld()->GetTimeSeconds();
+}
+
+float AMainPlayerController::GetServerTime()
+{
+	if(HasAuthority()) return GetWorld()->GetTimeSeconds();
+	else return GetWorld()->GetTimeSeconds() + ClientServerDelta;
+}
+
+void AMainPlayerController::ReceivedPlayer()
+{
+	Super::ReceivedPlayer();
+	if (IsLocalController())
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+	}
+	
 }
