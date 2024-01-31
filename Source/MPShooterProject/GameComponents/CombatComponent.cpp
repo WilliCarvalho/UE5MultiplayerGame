@@ -109,11 +109,11 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 
 			if (Character->GetCharacterMovement()->IsFalling())
 			{
-				CrosshairinAirFactor = FMath::FInterpTo(CrosshairinAirFactor, 2.25f, DeltaTime, 5.f);
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 5.f);
 			}
 			else
 			{
-				CrosshairinAirFactor = FMath::FInterpTo(CrosshairinAirFactor, 0.f, DeltaTime, 30.f);
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
 			}
 
 			if (bAiming)
@@ -131,7 +131,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			//Mixing all crosshair spread parameters to make a dynamic spread/shrink
 			HUDPackage.CrosshairSpread = 0.5f +
 				CrosshairVelocityFactor +
-				CrosshairinAirFactor -
+				CrosshairInAirFactor -
 				CrosshairAimFactor +
 				CrosshairShootFactor;
 

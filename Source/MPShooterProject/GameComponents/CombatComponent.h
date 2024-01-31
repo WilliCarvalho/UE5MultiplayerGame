@@ -78,7 +78,7 @@ private:
 
 #pragma region HUD and Crosshairs
 	float CrosshairVelocityFactor;
-	float CrosshairinAirFactor;
+	float CrosshairInAirFactor;
 	float CrosshairAimFactor;
 	float CrosshairShootFactor;
 
@@ -100,7 +100,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 		float ZoomInterpSpeed = 20.f;
 
-	void InterpFOV(float DletaTime);
+	void InterpFOV(float DeltaTime);
 #pragma endregion
 
 #pragma region Parameters: Automatic fire parameters
