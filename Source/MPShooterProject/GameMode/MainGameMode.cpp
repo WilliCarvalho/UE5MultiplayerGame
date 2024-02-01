@@ -9,6 +9,33 @@
 #include "MPShooterProject/PlayerController/MainPlayerController.h"
 #include "MPShooterProject/PlayerState/MainPlayerState.h"
 
+AMainGameMode::AMainGameMode()
+{
+	bDelayedStart = true;
+	
+}
+
+void AMainGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	LevelStartingTime = GetWorld()->GetTimeSeconds();
+}
+
+void AMainGameMode::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if(MatchState == MatchState::WaitingToStart)
+	{
+		CountDownTime = WarmupTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		if (CountDownTime <= 0.f)
+		{
+			StartMatch();
+		}
+	}
+}
+
 void AMainGameMode::PlayerEliminated(AMainCharacter* EliminatedCharacter, AMainPlayerController* VictimController,
                                      AMainPlayerController* AttackerController)
 {
